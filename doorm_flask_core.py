@@ -29,6 +29,11 @@ column2_name="column2"
 
 
 def initialize_api():
+def rename_function(new_name):
+    def decorator(f):
+        f.__name__ = new_name
+        return f
+    return decorator
     
     @app.route('/', methods=['GET'])
     def test():
