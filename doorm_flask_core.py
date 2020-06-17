@@ -9,7 +9,7 @@ import dorm as dm
 
 app = Flask(__name__)
 db1=dm.Mysqldb()
-
+db1.close_connection()
 
 app.config['MYSQL_USER'] = db1.DB_USERNAME
 app.config['MYSQL_PASSWORD'] = db1.DB_PASSWORD
@@ -25,8 +25,6 @@ TABLE_NAME="users"
 item_name="item"
 column1_name="column1"
 column2_name="column2"
-
-
 
 doorm_flask_dict={'users':'read','items':'read'}
 
