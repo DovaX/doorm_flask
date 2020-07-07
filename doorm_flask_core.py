@@ -7,6 +7,9 @@ from flask_jwt_extended import JWTManager
 from flask_jwt_extended import (create_access_token)
 import dorm as dm
 
+
+"""
+Template
 app = Flask(__name__)
 db1=dm.Mysqldb()
 db1.close_connection()
@@ -27,6 +30,9 @@ column1_name="column1"
 column2_name="column2"
 
 doorm_flask_dict={'users':'read','items':'read'}
+"""
+
+
 
 #CRUD API - CREATE, READ, UPDATE, DELETE
 
@@ -36,9 +42,9 @@ def rename_function(new_name):
         return f
     return decorator
 
-def initialize_api():    
+def initialize_api(app,doorm_flask_dict,item_name,column1_name,TABLE_NAME,mysql):    
     for k,v in doorm_flask_dict.items():
-        if v == 'read':
+        if 'read' in v:
             @app.route('/api/'+k, methods=['GET'])
             @rename_function('read_all_'+k)
             def read_all_x(k=k): #k=k because of late binding - otherwise, it would assign all endpoints with the same k
@@ -47,31 +53,25 @@ def initialize_api():
                 rv = cur.fetchall()
                 return jsonify(rv)
     
-    @app.route('/', methods=['GET'])
-    def test():
-        print("test")
-        return(jsonify({}))
-        
-    """
-    @app.route('/api/'+item_name+'s', methods=['GET'])
-    def get_all_items():
-        cur = mysql.connection.cursor()
-        cur.execute("SELECT * FROM "+TABLE_NAME)
-        rv = cur.fetchall()
-        return jsonify(rv)
-    """
-    @app.route('/api/'+item_name, methods=['POST'])
-    def add_item():
-        cur = mysql.connection.cursor()
-        column1 = request.get_json()[column1_name]
-        column2 = request.get_json()[column2_name]
-    
-        cur.execute("INSERT INTO "+TABLE_NAME+" ("+column1_name+","+column2_name+") VALUES ('" + str(column1) + "','"+str(column2)+"')")
-                    
-        mysql.connection.commit()
-        result = {column1_name:column1,column2_name:column2}
-    
-        return jsonify({"result": result})
+        if 'create' in v:
+            item=k[:-1]
+            @app.route('/api/'+item, methods=['POST'])
+            @rename_function('create_'+item)
+            def add_item(k=k):
+                cur = mysql.connection.cursor()
+                column1 = request.get_json()[column1_name]
+                #column2 = request.get_json()[column2_name]
+            
+                cur.execute("INSERT INTO "+k+" ("+column1_name+") VALUES ('" + str(column1) + "')")
+                            #,"+column2_name+"
+                            #'"+str(column2)+"'
+                            
+                            
+                mysql.connection.commit()
+                
+                result = {column1_name:column1}#,column2_name:column2}
+            
+                return jsonify({"result": result})
     
     @app.route("/api/"+item_name+"/<id>", methods=['PUT'])
     def update_item(id):
@@ -138,8 +138,11 @@ def initialize_api():
         
         return result
 
+"""
 if __name__ == '__main__':
     initialize_api()
     
     #globals['read_all_users']()
     app.run(debug=True)
+    
+"""
